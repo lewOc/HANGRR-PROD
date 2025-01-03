@@ -9,7 +9,10 @@ final class WardrobeItem {
     var categoryRawValue: String = WardrobeItemCategory.tops.rawValue
     var createdAt: Date
     var storedImageFileName: String?
-    var imageURL: URL?
+    @Transient var imageURL: URL? {
+        guard let fileName = storedImageFileName else { return nil }
+        return FileManager.default.documentsDirectory.appendingPathComponent(fileName)
+    }
     
     var category: WardrobeItemCategory {
         get {
@@ -25,13 +28,11 @@ final class WardrobeItem {
         name: String = "New Item",
         category: WardrobeItemCategory = .tops,
         createdAt: Date = .now,
-        storedImageFileName: String? = nil,
-        imageURL: URL? = nil
+        storedImageFileName: String? = nil
     ) {
         self.name = name
         self.categoryRawValue = category.rawValue
         self.createdAt = createdAt
         self.storedImageFileName = storedImageFileName
-        self.imageURL = imageURL
     }
 } 
