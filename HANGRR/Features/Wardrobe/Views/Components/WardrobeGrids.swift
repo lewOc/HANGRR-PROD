@@ -96,48 +96,18 @@ private struct WardrobeItemView: View {
     let item: WardrobeItem
     
     var body: some View {
-        Group {
-            if let imageFileName = item.storedImageFileName {
-                if let cachedImage = ImageCache.shared.get(forKey: imageFileName) {
-                    cachedImageView(cachedImage)
-                } else if let imageURL = item.imageURL {
-                    AsyncImage(url: imageURL) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: Layout.itemSize, height: Layout.itemSize)
-                                .clipped()
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .shadow(radius: 3)
-                                .onAppear {
-                                    if let uiImage = image.asUIImage() {
-                                        ImageCache.shared.set(uiImage, forKey: imageFileName)
-                                    }
-                                }
-                        case .failure:
-                            EmptyView()
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
-                    .frame(width: Layout.itemSize, height: Layout.itemSize)
+        if let imageFileName = item.storedImageFileName {
+            AsyncWardrobeImage(imageFileName: imageFileName, size: Layout.itemSize)
+        } else {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.customLightPink)
+                .frame(width: Layout.itemSize, height: Layout.itemSize)
+                .overlay {
+                    Image(systemName: "tshirt")
+                        .foregroundColor(.customPink)
+                        .font(.system(size: Layout.itemSize * 0.3))
                 }
-            }
         }
-    }
-    
-    private func cachedImageView(_ image: UIImage) -> some View {
-        Image(uiImage: image)
-            .resizable()
-            .scaledToFill()
-            .frame(width: Layout.itemSize, height: Layout.itemSize)
-            .clipped()
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(radius: 3)
     }
 }
 

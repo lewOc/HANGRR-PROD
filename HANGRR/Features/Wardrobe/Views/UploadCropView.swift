@@ -83,33 +83,28 @@ struct UploadCropView: View {
                 isError: $viewModel.isError
             )
         }
-        .alert("Name Your Item", isPresented: $viewModel.showNameInput) {
-            TextField("Item Name", text: $viewModel.itemName)
-            
-            Picker("Category", selection: $viewModel.selectedCategory) {
-                ForEach(WardrobeItemCategory.allCases, id: \.self) { category in
-                    Text(category.displayName).tag(category)
-                }
-            }
-            
-            Button("Cancel", role: .cancel) {
-                viewModel.showNameInput = false
-            }
-            Button("Save") {
-                Task {
-                    do {
-                        try await viewModel.saveItem()
-                        try modelContext.save()
-                        await MainActor.run {
-                            dismiss()
+        .confirmationDialog("Select Category", isPresented: $viewModel.showNameInput, titleVisibility: .visible) {
+            ForEach(WardrobeItemCategory.allCases, id: \.self) { category in
+                Button(category.displayName) {
+                    viewModel.selectedCategory = category
+                    Task {
+                        do {
+                            try await viewModel.saveItem()
+                            try modelContext.save()
+                            await MainActor.run {
+                                dismiss()
+                            }
+                        } catch {
+                            print("Error saving item: \(error)")
                         }
-                    } catch {
-                        print("Error saving item: \(error)")
                     }
                 }
             }
+            Button("Cancel", role: .cancel) {
+                viewModel.showNameInput = false
+            }
         } message: {
-            Text("Choose a name and category for your item")
+            Text("What type of clothing item is this?")
         }
     }
 }

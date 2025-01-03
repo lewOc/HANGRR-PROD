@@ -6,7 +6,7 @@ import SwiftData
 final class WardrobeItem {
     // MARK: - Properties
     var name: String
-    var categoryRawValue: String = WardrobeItemCategory.tops.rawValue
+    var categoryRawValue: String = WardrobeItemCategory.top.rawValue
     var createdAt: Date
     var storedImageFileName: String?
     @Transient var imageURL: URL? {
@@ -16,7 +16,7 @@ final class WardrobeItem {
     
     var category: WardrobeItemCategory {
         get {
-            WardrobeItemCategory(rawValue: categoryRawValue) ?? .tops
+            WardrobeItemCategory(rawValue: categoryRawValue) ?? .top
         }
         set {
             categoryRawValue = newValue.rawValue
@@ -26,7 +26,7 @@ final class WardrobeItem {
     // MARK: - Initialization
     init(
         name: String = "New Item",
-        category: WardrobeItemCategory = .tops,
+        category: WardrobeItemCategory = .top,
         createdAt: Date = .now,
         storedImageFileName: String? = nil
     ) {

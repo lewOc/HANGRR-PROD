@@ -2,11 +2,11 @@ import Foundation
 
 /// Categories for wardrobe items
 public enum WardrobeItemCategory: String, Codable, CaseIterable, Hashable {
-    case tops = "Tops"
-    case bottoms = "Bottoms"
+    case top = "Top"
+    case bottom = "Bottom"
+    case dress = "Dress"
+    case accessory = "Accessory"
     case shoes = "Shoes"
-    case accessories = "Accessories"
-    case outerwear = "Outerwear"
     
     var displayName: String {
         rawValue
