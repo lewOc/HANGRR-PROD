@@ -6,7 +6,10 @@ struct WardrobeItemsView: View {
     @Query private var items: [WardrobeItem]
     
     // MARK: - Properties
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 2)
+    private struct GridConstants {
+        static let spacing: CGFloat = 16
+        static let twoColumn = Array(repeating: GridItem(.flexible(), spacing: spacing), count: 2)
+    }
     
     // MARK: - Body
     var body: some View {
@@ -43,7 +46,7 @@ struct WardrobeItemsView: View {
             
             // Items Grid
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 16) {
+                LazyVGrid(columns: GridConstants.twoColumn, spacing: GridConstants.spacing) {
                     ForEach(items) { item in
                         WardrobeItemCard(item: item)
                     }

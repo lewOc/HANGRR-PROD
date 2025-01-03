@@ -1,6 +1,11 @@
 import SwiftUI
 import SwiftData
 
+private struct GridConstants {
+    static let spacing: CGFloat = 16
+    static let threeColumn = Array(repeating: GridItem(.flexible(), spacing: spacing), count: 3)
+}
+
 struct WardrobeView: View {
     @StateObject private var viewModel = WardrobeViewModel()
     @Query private var wardrobeItems: [WardrobeItem]
@@ -155,10 +160,9 @@ private struct SectionHeader: View {
 
 private struct WardrobeItemsGrid: View {
     let items: [WardrobeItem]
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 3)
     
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 16) {
+        LazyVGrid(columns: GridConstants.threeColumn, spacing: GridConstants.spacing) {
             if items.isEmpty {
                 // Show 6 placeholder items when no items exist
                 ForEach(0..<6) { _ in
@@ -187,10 +191,8 @@ private struct WardrobeItemsGrid: View {
 }
 
 private struct TryOnResultsGrid: View {
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 3)
-    
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 16) {
+        LazyVGrid(columns: GridConstants.threeColumn, spacing: GridConstants.spacing) {
             ForEach(0..<3) { _ in
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.customLightPink)
@@ -211,10 +213,8 @@ private struct TryOnResultsGrid: View {
 }
 
 private struct OutfitsGrid: View {
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 3)
-    
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 16) {
+        LazyVGrid(columns: GridConstants.threeColumn, spacing: GridConstants.spacing) {
             ForEach(0..<3) { _ in
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.customLightPink)
