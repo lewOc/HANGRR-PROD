@@ -100,36 +100,38 @@ class DrawingCanvasView: UIView {
     
     private func extractImage() {
         // Create a context with the original image size
-        UIGraphicsBeginImageContextWithOptions(baseImage.size, false, baseImage.scale)
+        UIGraphicsBeginImageContextWithOptions(baseImage.size, false, 1.0)
         guard let context = UIGraphicsGetCurrentContext() else { return }
         
-        // Scale and transform the path to match image coordinates
-        let scale = baseImage.size.width / self.imageRect.width
-        let transform = CGAffineTransform(scaleX: scale, y: scale)
-            .translatedBy(x: -self.imageRect.minX / scale, y: -self.imageRect.minY / scale)
+        // Clear the context
+        context.clear(CGRect(origin: .zero, size: baseImage.size))
+        
+        // Scale the path to match image coordinates
+        let scaleX = baseImage.size.width / imageRect.width
+        let scaleY = baseImage.size.height / imageRect.height
+        let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
+            .translatedBy(x: -imageRect.minX, y: -imageRect.minY)
         
         let scaledPath = path.copy() as! UIBezierPath
         scaledPath.apply(transform)
         
-        // Create mask
+        // Create mask using the path
         context.saveGState()
-        
-        // Clear background
-        context.clear(CGRect(origin: .zero, size: baseImage.size))
-        
-        // Add clipping path
         scaledPath.addClip()
         
-        // Draw only the image portion inside the path
+        // Draw the image only inside the path
         baseImage.draw(in: CGRect(origin: .zero, size: baseImage.size))
+        context.restoreGState()
         
         // Get the masked image
         let maskedImage = UIGraphicsGetImageFromCurrentImageContext()
-        
-        context.restoreGState()
         UIGraphicsEndImageContext()
         
-        onFinishDrawing?(maskedImage)
+        if let maskedImage = maskedImage {
+            onFinishDrawing?(maskedImage)
+        } else {
+            onFinishDrawing?(nil)
+        }
     }
     
     func reset() {

@@ -184,67 +184,60 @@ private struct WardrobeItemsGrid: View {
     
     var body: some View {
         LazyVGrid(columns: GridConstants.threeColumn, spacing: GridConstants.spacing) {
-            // Show latest 6 items
             ForEach(items.prefix(6)) { item in
                 NavigationLink(destination: WardrobeItemsView()) {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.customLightPink)
-                        .aspectRatio(1, contentMode: .fit)
-                        .overlay {
-                            if let imageFileName = item.storedImageFileName {
-                                if let cachedImage = ImageCache.shared.get(forKey: imageFileName) {
-                                    Image(uiImage: cachedImage)
+                    if let imageFileName = item.storedImageFileName {
+                        if let cachedImage = ImageCache.shared.get(forKey: imageFileName) {
+                            Image(uiImage: cachedImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 100, height: 100)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .shadow(radius: 3)
+                        } else if let imageURL = item.imageURL {
+                            AsyncImage(url: imageURL) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                case .success(let image):
+                                    image
                                         .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .padding(8)
-                                } else if let imageURL = item.imageURL {
-                                    AsyncImage(url: imageURL) { phase in
-                                        switch phase {
-                                        case .empty:
-                                            ProgressView()
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .padding(8)
-                                                .onAppear {
-                                                    // Cache the loaded image
-                                                    if let uiImage = image.asUIImage() {
-                                                        ImageCache.shared.set(uiImage, forKey: imageFileName)
-                                                    }
-                                                }
-                                        case .failure(let error):
-                                            Image(systemName: "tshirt")
-                                                .foregroundColor(.customPink)
-                                                .onAppear {
-                                                    print("Image load failed for \(item.name): \(error.localizedDescription)")
-                                                }
-                                        @unknown default:
-                                            Image(systemName: "tshirt")
-                                                .foregroundColor(.customPink)
+                                        .scaledToFill()
+                                        .frame(width: 100, height: 100)
+                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                        .shadow(radius: 3)
+                                        .onAppear {
+                                            if let uiImage = image.asUIImage() {
+                                                ImageCache.shared.set(uiImage, forKey: imageFileName)
+                                            }
                                         }
-                                    }
+                                case .failure:
+                                    EmptyView()
+                                @unknown default:
+                                    EmptyView()
                                 }
-                            } else {
-                                Image(systemName: "tshirt")
-                                    .foregroundColor(.customPink)
-                                    .onAppear {
-                                        print("No image URL for item: \(item.name)")
-                                    }
                             }
+                            .frame(width: 100, height: 100)
                         }
+                    }
                 }
             }
             
-            // Fill remaining slots with placeholders
-            ForEach(0..<max(0, 6 - items.count), id: \.self) { _ in
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.customLightPink)
-                    .aspectRatio(1, contentMode: .fit)
-                    .overlay {
-                        Image(systemName: "tshirt")
+            // Only show "Add Item" button if we have less than 6 items
+            if items.count < 6 {
+                NavigationLink(value: "upload") {
+                    VStack {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 30))
+                            .foregroundColor(.customPink)
+                        Text("Add Item")
+                            .font(.caption)
                             .foregroundColor(.customPink)
                     }
+                    .frame(width: 100, height: 100)
+                    .background(Color.customLightPink.opacity(0.3))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
             }
         }
         .padding(.horizontal)

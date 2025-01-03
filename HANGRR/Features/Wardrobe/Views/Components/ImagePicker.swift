@@ -8,7 +8,14 @@ struct ImagePicker: UIViewControllerRepresentable {
         var config = PHPickerConfiguration()
         config.filter = .images
         config.selectionLimit = 1
-        config.preferredAssetRepresentationMode = .current
+        
+        // Request highest quality
+        if #available(iOS 16.0, *) {
+            config.preferredAssetRepresentationMode = .current
+        } else {
+            config.preferredAssetRepresentationMode = .compatible
+        }
+        
         let picker = PHPickerViewController(configuration: config)
         picker.delegate = context.coordinator
         return picker
@@ -32,11 +39,27 @@ struct ImagePicker: UIViewControllerRepresentable {
             
             guard let provider = results.first?.itemProvider else { return }
             
+            // Try to load the full size image
             if provider.canLoadObject(ofClass: UIImage.self) {
-                provider.loadObject(ofClass: UIImage.self) { [weak self] image, _ in
+                provider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+                    if let error = error {
+                        print("Error loading image: \(error)")
+                        return
+                    }
+                    
                     DispatchQueue.main.async {
                         if let image = image as? UIImage {
-                            self?.parent.image = image
+                            // Ensure we maintain the original image size and quality
+                            if let cgImage = image.cgImage {
+                                let originalImage = UIImage(
+                                    cgImage: cgImage,
+                                    scale: 1.0,
+                                    orientation: image.imageOrientation
+                                )
+                                self?.parent.image = originalImage
+                            } else {
+                                self?.parent.image = image
+                            }
                         }
                     }
                 }

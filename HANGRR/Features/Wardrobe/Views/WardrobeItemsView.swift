@@ -96,33 +96,27 @@ private struct WardrobeItemCard: View {
     
     var body: some View {
         VStack(alignment: .center, spacing: 8) {
-            SquareImageContainer {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.customLightPink)
-                    .overlay {
-                        if let imageURL = item.imageURL {
-                            AsyncImage(url: imageURL) { phase in
-                                switch phase {
-                                case .empty:
-                                    ProgressView()
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .padding(8)
-                                case .failure(_):
-                                    Image(systemName: "tshirt")
-                                        .foregroundColor(.customPink)
-                                @unknown default:
-                                    Image(systemName: "tshirt")
-                                        .foregroundColor(.customPink)
-                                }
-                            }
-                        } else {
-                            Image(systemName: "tshirt")
-                                .foregroundColor(.customPink)
-                        }
+            if let imageURL = item.imageURL {
+                AsyncImage(url: imageURL) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 160, height: 160)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .shadow(radius: 3)
+                    case .failure(_):
+                        placeholderView
+                    @unknown default:
+                        placeholderView
                     }
+                }
+                .frame(width: 160, height: 160)
+            } else {
+                placeholderView
             }
             
             Text(item.name)
@@ -130,6 +124,17 @@ private struct WardrobeItemCard: View {
                 .foregroundColor(.primary)
                 .lineLimit(1)
         }
+    }
+    
+    private var placeholderView: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(Color.customLightPink)
+            .frame(width: 160, height: 160)
+            .overlay {
+                Image(systemName: "tshirt")
+                    .foregroundColor(.customPink)
+                    .font(.system(size: 40))
+            }
     }
 }
 
@@ -147,6 +152,7 @@ private struct SquareImageContainer<Content: View>: View {
             content()
                 .frame(width: size, height: size)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(height: 200)
         }
         .aspectRatio(1, contentMode: .fit)
     }
