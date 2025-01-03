@@ -3,12 +3,27 @@ import SwiftData
 
 struct WardrobeItemsView: View {
     @StateObject private var viewModel = WardrobeItemsViewModel()
-    @Query private var items: [WardrobeItem]
+    @Query(sort: \WardrobeItem.createdAt, order: .reverse) private var allItems: [WardrobeItem]
+    @Environment(\.modelContext) private var modelContext
+    
+    init() {
+        let sortDescriptor = SortDescriptor<WardrobeItem>(\.createdAt, order: .reverse)
+        _allItems = Query(sort: [sortDescriptor])
+    }
     
     // MARK: - Properties
     private struct GridConstants {
         static let spacing: CGFloat = 16
         static let twoColumn = Array(repeating: GridItem(.flexible(), spacing: spacing), count: 2)
+    }
+    
+    private var filteredItems: [WardrobeItem] {
+        switch viewModel.selectedCategory {
+        case .all:
+            return allItems
+        case .category(let itemCategory):
+            return allItems.filter { $0.category == itemCategory }
+        }
     }
     
     // MARK: - Body
@@ -31,7 +46,7 @@ struct WardrobeItemsView: View {
             
             // Items count and sort
             HStack {
-                Text("\(items.count) items")
+                Text("\(filteredItems.count) items")
                     .foregroundColor(.gray)
                 
                 Spacer()
@@ -47,7 +62,7 @@ struct WardrobeItemsView: View {
             // Items Grid
             ScrollView {
                 LazyVGrid(columns: GridConstants.twoColumn, spacing: GridConstants.spacing) {
-                    ForEach(items) { item in
+                    ForEach(filteredItems) { item in
                         WardrobeItemCard(item: item)
                     }
                 }
@@ -141,6 +156,6 @@ private struct SquareImageContainer<Content: View>: View {
 #Preview {
     NavigationStack {
         WardrobeItemsView()
-            .modelContainer(for: WardrobeItem.self, inMemory: true)
+            .modelContainer(ModelContainerFactory.preview)
     }
 } 

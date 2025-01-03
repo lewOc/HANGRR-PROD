@@ -8,13 +8,18 @@ private struct GridConstants {
 
 struct WardrobeView: View {
     @StateObject private var viewModel = WardrobeViewModel()
-    @Query private var wardrobeItems: [WardrobeItem]
+    @Query(sort: \WardrobeItem.createdAt, order: .reverse) private var wardrobeItems: [WardrobeItem]
     @Environment(\.modelContext) private var modelContext
-    @State private var showingUploadView = false
+    @State private var path = NavigationPath()
+    
+    init() {
+        let sortDescriptor = SortDescriptor<WardrobeItem>(\.createdAt, order: .reverse)
+        _wardrobeItems = Query(sort: [sortDescriptor])
+    }
     
     // MARK: - Body
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     // Custom header
@@ -56,7 +61,7 @@ struct WardrobeView: View {
                         ) {
                             AnyView(
                                 Button {
-                                    showingUploadView = true
+                                    path.append("upload")
                                 } label: {
                                     Image(systemName: "plus")
                                         .font(.title2)
@@ -65,16 +70,27 @@ struct WardrobeView: View {
                                         .background(Color.customPink)
                                         .clipShape(Circle())
                                 }
-                                .navigationDestination(isPresented: $showingUploadView) {
-                                    UploadCropView(modelContext: modelContext)
-                                }
                             )
                         }
                     }
                     .foregroundColor(.primary)
                     
                     // Wardrobe Grid
-                    WardrobeItemsGrid(items: wardrobeItems)
+                    if !wardrobeItems.isEmpty {
+                        WardrobeItemsGrid(items: Array(wardrobeItems.prefix(6)))
+                    } else {
+                        // Empty State
+                        VStack(spacing: 12) {
+                            Image(systemName: "tshirt")
+                                .font(.system(size: 40))
+                                .foregroundColor(.customPink)
+                            Text("No items yet")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 40)
+                    }
                     
                     // Try On Results Section
                     NavigationLink(destination: EmptyView()) {
@@ -101,6 +117,11 @@ struct WardrobeView: View {
                     OutfitsGrid()
                 }
                 .padding(.vertical)
+            }
+            .navigationDestination(for: String.self) { route in
+                if route == "upload" {
+                    UploadCropView(modelContext: modelContext)
+                }
             }
         }
     }
@@ -163,16 +184,56 @@ private struct WardrobeItemsGrid: View {
     
     var body: some View {
         LazyVGrid(columns: GridConstants.threeColumn, spacing: GridConstants.spacing) {
-            // Show actual items (up to 6)
+            // Show latest 6 items
             ForEach(items.prefix(6)) { item in
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.customLightPink)
-                    .aspectRatio(1, contentMode: .fit)
-                    .overlay {
-                        // TODO: Replace with actual item image when available
-                        Image(systemName: "tshirt")
-                            .foregroundColor(.customPink)
-                    }
+                NavigationLink(destination: WardrobeItemsView()) {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.customLightPink)
+                        .aspectRatio(1, contentMode: .fit)
+                        .overlay {
+                            if let imageFileName = item.storedImageFileName {
+                                if let cachedImage = ImageCache.shared.get(forKey: imageFileName) {
+                                    Image(uiImage: cachedImage)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .padding(8)
+                                } else if let imageURL = item.imageURL {
+                                    AsyncImage(url: imageURL) { phase in
+                                        switch phase {
+                                        case .empty:
+                                            ProgressView()
+                                        case .success(let image):
+                                            image
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .padding(8)
+                                                .onAppear {
+                                                    // Cache the loaded image
+                                                    if let uiImage = image.asUIImage() {
+                                                        ImageCache.shared.set(uiImage, forKey: imageFileName)
+                                                    }
+                                                }
+                                        case .failure(let error):
+                                            Image(systemName: "tshirt")
+                                                .foregroundColor(.customPink)
+                                                .onAppear {
+                                                    print("Image load failed for \(item.name): \(error.localizedDescription)")
+                                                }
+                                        @unknown default:
+                                            Image(systemName: "tshirt")
+                                                .foregroundColor(.customPink)
+                                        }
+                                    }
+                                }
+                            } else {
+                                Image(systemName: "tshirt")
+                                    .foregroundColor(.customPink)
+                                    .onAppear {
+                                        print("No image URL for item: \(item.name)")
+                                    }
+                            }
+                        }
+                }
             }
             
             // Fill remaining slots with placeholders
@@ -237,5 +298,5 @@ private struct OutfitsGrid: View {
 // MARK: - Preview
 #Preview {
     WardrobeView()
-        .modelContainer(for: WardrobeItem.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.preview)
 } 

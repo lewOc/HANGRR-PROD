@@ -32,13 +32,20 @@ final class UploadCropViewModel: ObservableObject {
         let fileName = UUID().uuidString + ".png"
         let savedFileName = try FileManager.default.saveImage(imageData, withName: fileName)
         
-        let item = WardrobeItem(
-            name: itemName.isEmpty ? "New Item" : itemName,
-            imageFileName: savedFileName
-        )
+        // Cache the image immediately
+        ImageCache.shared.set(image, forKey: savedFileName)
         
-        modelContext.insert(item)
-        try modelContext.save()
+        await MainActor.run {
+            let item = WardrobeItem(
+                name: itemName.isEmpty ? "New Item" : itemName,
+                imageFileName: savedFileName,
+                createdAt: .now,
+                category: .tops
+            )
+            
+            modelContext.insert(item)
+            print("Saved item with name: \(item.name), fileName: \(savedFileName)")
+        }
     }
 }
 
