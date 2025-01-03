@@ -77,29 +77,60 @@ private struct WardrobeItemCard: View {
     let item: WardrobeItem
     
     var body: some View {
-        VStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.customLightPink)
-                .aspectRatio(1, contentMode: .fit)
-                .overlay {
-                    if let imageURL = item.imageURL {
-                        AsyncImage(url: imageURL) { image in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        } placeholder: {
-                            ProgressView()
+        VStack(alignment: .center, spacing: 8) {
+            SquareImageContainer {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.customLightPink)
+                    .overlay {
+                        if let imageURL = item.imageURL {
+                            AsyncImage(url: imageURL) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .padding(8)
+                                case .failure(_):
+                                    Image(systemName: "tshirt")
+                                        .foregroundColor(.customPink)
+                                @unknown default:
+                                    Image(systemName: "tshirt")
+                                        .foregroundColor(.customPink)
+                                }
+                            }
+                        } else {
+                            Image(systemName: "tshirt")
+                                .foregroundColor(.customPink)
                         }
-                    } else {
-                        Image(systemName: "tshirt")
-                            .foregroundColor(.customPink)
                     }
-                }
+            }
             
             Text(item.name)
                 .font(.caption)
                 .foregroundColor(.primary)
+                .lineLimit(1)
         }
+    }
+}
+
+// Helper view to maintain square aspect ratio
+private struct SquareImageContainer<Content: View>: View {
+    let content: () -> Content
+    
+    init(@ViewBuilder content: @escaping () -> Content) {
+        self.content = content
+    }
+    
+    var body: some View {
+        GeometryReader { geometry in
+            let size = min(geometry.size.width, geometry.size.height)
+            content()
+                .frame(width: size, height: size)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .aspectRatio(1, contentMode: .fit)
     }
 }
 

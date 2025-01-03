@@ -255,6 +255,8 @@
 				DEVELOPMENT_TEAM = 355UFX5R32;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "HANGRR needs permission to save processed garment images to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "HANGRR needs access to your photo library to let you select garments to add to your wardrobe.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -284,6 +286,8 @@
 				DEVELOPMENT_TEAM = 355UFX5R32;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "HANGRR needs permission to save processed garment images to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "HANGRR needs access to your photo library to let you select garments to add to your wardrobe.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

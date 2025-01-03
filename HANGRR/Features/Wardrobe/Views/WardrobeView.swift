@@ -4,6 +4,8 @@ import SwiftData
 struct WardrobeView: View {
     @StateObject private var viewModel = WardrobeViewModel()
     @Query private var wardrobeItems: [WardrobeItem]
+    @Environment(\.modelContext) private var modelContext
+    @State private var showingUploadView = false
     
     // MARK: - Body
     var body: some View {
@@ -46,7 +48,23 @@ struct WardrobeView: View {
                         SectionHeader(
                             title: "Wardrobe Items",
                             subtitle: "These are all of your wardrobe items"
-                        )
+                        ) {
+                            AnyView(
+                                Button {
+                                    showingUploadView = true
+                                } label: {
+                                    Image(systemName: "plus")
+                                        .font(.title2)
+                                        .foregroundColor(.white)
+                                        .padding(8)
+                                        .background(Color.customPink)
+                                        .clipShape(Circle())
+                                }
+                                .navigationDestination(isPresented: $showingUploadView) {
+                                    UploadCropView(modelContext: modelContext)
+                                }
+                            )
+                        }
                     }
                     .foregroundColor(.primary)
                     
@@ -107,6 +125,7 @@ private struct TryOnButton: View {
 private struct SectionHeader: View {
     let title: String
     let subtitle: String
+    var actionButton: (() -> AnyView)? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -120,6 +139,10 @@ private struct SectionHeader: View {
                     .imageScale(.small)
                 
                 Spacer()
+                
+                if let actionButton {
+                    actionButton()
+                }
             }
             
             Text(subtitle)

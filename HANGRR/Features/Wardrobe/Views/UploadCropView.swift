@@ -1,77 +1,98 @@
 import SwiftUI
+import SwiftData
 
 struct UploadCropView: View {
-    @StateObject private var viewModel = UploadCropViewModel()
+    @StateObject private var viewModel: UploadCropViewModel
     @Environment(\.dismiss) private var dismiss
     
+    init(modelContext: ModelContext) {
+        _viewModel = StateObject(wrappedValue: UploadCropViewModel(modelContext: modelContext))
+    }
+    
     var body: some View {
-        NavigationView {
-            VStack {
-                // Drawing area
-                ZStack {
-                    Color(.systemBackground)
-                    
-                    // T-shirt icon
-                    Image(systemName: "tshirt")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 100, height: 100)
-                        .foregroundColor(.brandPink)
-                    
-                    // TODO: Add drawing canvas here
-                }
-                
-                // Instructions
-                VStack(spacing: 8) {
-                    Text("Draw around your garment")
-                        .font(.headline)
-                    
-                    Text("Trace the outline of the item you want to add to your wardrobe. Make sure to complete the shape by connecting back to the start.")
+        NavigationStack {
+            VStack(spacing: 20) {
+                if let image = viewModel.selectedImage {
+                    // Instructions
+                    Text("Draw around the item you want to upload")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
                         .padding(.horizontal)
-                }
-                .padding()
-                
-                // Reset button
-                Button(action: {
-                    viewModel.resetDrawing()
-                }) {
-                    HStack {
-                        Image(systemName: "arrow.counterclockwise")
-                        Text("Reset")
+                    
+                    // Drawing Canvas
+                    DrawingCanvas(image: image) { maskedImage in
+                        viewModel.setMaskedImage(maskedImage)
+                        viewModel.showNameInput = true
                     }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Color.brandPink)
-                    .cornerRadius(8)
+                    .padding(.horizontal)
+                    
+                    // Action Buttons
+                    HStack(spacing: 16) {
+                        Button(role: .destructive) {
+                            viewModel.setImage(nil)
+                        } label: {
+                            Label("Clear", systemImage: "trash")
+                        }
+                        .buttonStyle(.bordered)
+                        
+                        Button {
+                            viewModel.showImagePicker = true
+                        } label: {
+                            Label("Change Photo", systemImage: "photo")
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    .padding(.bottom)
+                } else {
+                    // Initial Image Selection
+                    VStack(spacing: 16) {
+                        Image(systemName: "tshirt")
+                            .font(.system(size: 60))
+                            .foregroundColor(Color.customPink)
+                        
+                        Text("Select a photo of your garment")
+                            .font(.headline)
+                        
+                        Button {
+                            viewModel.showImagePicker = true
+                        } label: {
+                            Label("Choose Photo", systemImage: "photo.badge.plus")
+                                .font(.headline)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color.customPink)
+                    }
+                    .padding()
                 }
-                .padding(.bottom)
             }
             .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Add Garment")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
                         dismiss()
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        viewModel.handleDone()
+            }
+            .sheet(isPresented: $viewModel.showImagePicker) {
+                ImagePicker(image: Binding(
+                    get: { viewModel.selectedImage },
+                    set: { viewModel.setImage($0) }
+                ))
+            }
+            .alert("Name Your Item", isPresented: $viewModel.showNameInput) {
+                TextField("Item Name", text: $viewModel.itemName)
+                Button("Cancel", role: .cancel) {
+                    viewModel.showNameInput = false
+                }
+                Button("Save") {
+                    Task {
+                        try? await viewModel.saveItem()
+                        dismiss()
                     }
                 }
             }
-            .navigationTitle("Crop Garment")
         }
     }
 }
 
-// MARK: - Preview
-struct UploadCropView_Previews: PreviewProvider {
-    static var previews: some View {
-        UploadCropView()
-    }
-}
