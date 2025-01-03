@@ -3,6 +3,7 @@ import SwiftUI
 extension Color {
     static let customPink = Color(hex: "#eea1cd")
     static let customLightPink = Color(hex: "#fde4f2")
+    static let brandPink = Color(hex: "#eea1cd")
 }
 
 extension Color {
