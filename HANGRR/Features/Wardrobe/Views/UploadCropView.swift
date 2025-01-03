@@ -75,13 +75,23 @@ struct UploadCropView: View {
             }
         }
         .sheet(isPresented: $viewModel.showImagePicker) {
-            ImagePicker(image: Binding(
-                get: { viewModel.selectedImage },
-                set: { viewModel.setImage($0) }
-            ))
+            ImagePicker(
+                image: Binding(
+                    get: { viewModel.selectedImage },
+                    set: { viewModel.setImage($0) }
+                ),
+                isError: $viewModel.isError
+            )
         }
         .alert("Name Your Item", isPresented: $viewModel.showNameInput) {
             TextField("Item Name", text: $viewModel.itemName)
+            
+            Picker("Category", selection: $viewModel.selectedCategory) {
+                ForEach(WardrobeItemCategory.allCases, id: \.self) { category in
+                    Text(category.displayName).tag(category)
+                }
+            }
+            
             Button("Cancel", role: .cancel) {
                 viewModel.showNameInput = false
             }
@@ -98,6 +108,8 @@ struct UploadCropView: View {
                     }
                 }
             }
+        } message: {
+            Text("Choose a name and category for your item")
         }
     }
 }

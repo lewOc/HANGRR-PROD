@@ -1,33 +1,37 @@
 import Foundation
 import SwiftData
 
+/// A model representing an item in the user's wardrobe
 @Model
 final class WardrobeItem {
-    var id: UUID
+    // MARK: - Properties
     var name: String
-    private var imageFileName: String? // Store just the filename
+    var categoryRawValue: String = WardrobeItemCategory.tops.rawValue
     var createdAt: Date
-    private var _category: WardrobeItemCategory?
+    var storedImageFileName: String?
+    var imageURL: URL?
     
     var category: WardrobeItemCategory {
-        get { _category ?? .tops }
-        set { _category = newValue }
+        get {
+            WardrobeItemCategory(rawValue: categoryRawValue) ?? .tops
+        }
+        set {
+            categoryRawValue = newValue.rawValue
+        }
     }
     
-    var storedImageFileName: String? {
-        get { imageFileName }
-    }
-    
-    var imageURL: URL? {
-        guard let fileName = imageFileName else { return nil }
-        return FileManager.default.documentsDirectory.appendingPathComponent(fileName)
-    }
-    
-    init(id: UUID = UUID(), name: String, imageFileName: String? = nil, createdAt: Date = .now, category: WardrobeItemCategory = .tops) {
-        self.id = id
+    // MARK: - Initialization
+    init(
+        name: String = "New Item",
+        category: WardrobeItemCategory = .tops,
+        createdAt: Date = .now,
+        storedImageFileName: String? = nil,
+        imageURL: URL? = nil
+    ) {
         self.name = name
-        self.imageFileName = imageFileName
+        self.categoryRawValue = category.rawValue
         self.createdAt = createdAt
-        self._category = category
+        self.storedImageFileName = storedImageFileName
+        self.imageURL = imageURL
     }
 } 

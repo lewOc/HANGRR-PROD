@@ -8,6 +8,8 @@ final class UploadCropViewModel: ObservableObject {
     @Published var showImagePicker = false
     @Published var showNameInput = false
     @Published var itemName = ""
+    @Published var isError = false
+    @Published var selectedCategory: WardrobeItemCategory = .tops
     
     private let modelContext: ModelContext
     
@@ -74,9 +76,9 @@ final class UploadCropViewModel: ObservableObject {
         await MainActor.run {
             let item = WardrobeItem(
                 name: itemName.isEmpty ? "New Item" : itemName,
-                imageFileName: savedFileName,
+                category: selectedCategory,
                 createdAt: .now,
-                category: .tops
+                storedImageFileName: savedFileName
             )
             
             modelContext.insert(item)

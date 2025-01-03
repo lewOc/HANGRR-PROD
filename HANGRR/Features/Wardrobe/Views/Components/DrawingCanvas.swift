@@ -99,13 +99,6 @@ class DrawingCanvasView: UIView {
     }
     
     private func extractImage() {
-        // Create a context with the original image size
-        UIGraphicsBeginImageContextWithOptions(baseImage.size, false, 1.0)
-        guard let context = UIGraphicsGetCurrentContext() else { return }
-        
-        // Clear the context
-        context.clear(CGRect(origin: .zero, size: baseImage.size))
-        
         // Scale the path to match image coordinates
         let scaleX = baseImage.size.width / imageRect.width
         let scaleY = baseImage.size.height / imageRect.height
@@ -115,15 +108,28 @@ class DrawingCanvasView: UIView {
         let scaledPath = path.copy() as! UIBezierPath
         scaledPath.apply(transform)
         
+        // Get the bounds of the drawn path
+        let pathBounds = scaledPath.bounds
+        
+        // Create a context with the path bounds size
+        UIGraphicsBeginImageContextWithOptions(pathBounds.size, false, 1.0)
+        guard let context = UIGraphicsGetCurrentContext() else { return }
+        
+        // Clear the context
+        context.clear(CGRect(origin: .zero, size: pathBounds.size))
+        
+        // Translate context to account for path bounds origin
+        context.translateBy(x: -pathBounds.minX, y: -pathBounds.minY)
+        
         // Create mask using the path
         context.saveGState()
         scaledPath.addClip()
         
-        // Draw the image only inside the path
+        // Draw the image
         baseImage.draw(in: CGRect(origin: .zero, size: baseImage.size))
         context.restoreGState()
         
-        // Get the masked image
+        // Get the cropped and masked image
         let maskedImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         

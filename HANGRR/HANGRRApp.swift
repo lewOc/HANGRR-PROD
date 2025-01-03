@@ -10,20 +10,25 @@ import SwiftData
 
 @main
 struct HANGRRApp: App {
-    let container: ModelContainer = {
-        let schema = Schema([WardrobeItem.self])
-        let modelConfiguration = ModelConfiguration(isStoredInMemoryOnly: false)
+    let container: ModelContainer
+    
+    init() {
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            container = try ModelContainer(
+                for: Schema([WardrobeItem.self]),
+                configurations: ModelConfiguration(isStoredInMemoryOnly: false)
+            )
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            fatalError("Failed to initialize ModelContainer: \(error.localizedDescription)")
         }
-    }()
+    }
     
     var body: some Scene {
         WindowGroup {
             WardrobeView()
+                .modelContainer(container)
+                .preferredColorScheme(.light) // Support dark mode later
+                .environment(\.colorScheme, .light)
         }
-        .modelContainer(container)
     }
 }

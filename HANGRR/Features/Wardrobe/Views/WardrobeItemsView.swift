@@ -13,8 +13,8 @@ struct WardrobeItemsView: View {
     
     // MARK: - Properties
     private struct GridConstants {
-        static let spacing: CGFloat = 16
-        static let twoColumn = Array(repeating: GridItem(.flexible(), spacing: spacing), count: 2)
+        static let spacing: CGFloat = 12
+        static let threeColumn = Array(repeating: GridItem(.flexible(), spacing: spacing), count: 3)
     }
     
     private var filteredItems: [WardrobeItem] {
@@ -61,7 +61,7 @@ struct WardrobeItemsView: View {
             
             // Items Grid
             ScrollView {
-                LazyVGrid(columns: GridConstants.twoColumn, spacing: GridConstants.spacing) {
+                LazyVGrid(columns: GridConstants.threeColumn, spacing: GridConstants.spacing) {
                     ForEach(filteredItems) { item in
                         WardrobeItemCard(item: item)
                     }
@@ -105,16 +105,16 @@ private struct WardrobeItemCard: View {
                         image
                             .resizable()
                             .scaledToFill()
-                            .frame(width: 160, height: 160)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .shadow(radius: 3)
+                            .frame(width: 110, height: 110)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .shadow(radius: 2)
                     case .failure(_):
                         placeholderView
                     @unknown default:
                         placeholderView
                     }
                 }
-                .frame(width: 160, height: 160)
+                .frame(width: 110, height: 110)
             } else {
                 placeholderView
             }
@@ -127,13 +127,13 @@ private struct WardrobeItemCard: View {
     }
     
     private var placeholderView: some View {
-        RoundedRectangle(cornerRadius: 12)
+        RoundedRectangle(cornerRadius: 8)
             .fill(Color.customLightPink)
-            .frame(width: 160, height: 160)
+            .frame(width: 110, height: 110)
             .overlay {
                 Image(systemName: "tshirt")
                     .foregroundColor(.customPink)
-                    .font(.system(size: 40))
+                    .font(.system(size: 30))
             }
     }
 }
@@ -162,6 +162,6 @@ private struct SquareImageContainer<Content: View>: View {
 #Preview {
     NavigationStack {
         WardrobeItemsView()
-            .modelContainer(ModelContainerFactory.preview)
+            .modelContainer(for: WardrobeItem.self)
     }
 } 

@@ -1,20 +1,19 @@
 import SwiftUI
 import PhotosUI
 
+/// A SwiftUI view that presents a photo picker interface for selecting images
+/// from the user's photo library.
 struct ImagePicker: UIViewControllerRepresentable {
+    // MARK: - Properties
     @Binding var image: UIImage?
+    @Binding var isError: Bool
     
+    // MARK: - UIViewControllerRepresentable
     func makeUIViewController(context: Context) -> PHPickerViewController {
         var config = PHPickerConfiguration()
         config.filter = .images
         config.selectionLimit = 1
-        
-        // Request highest quality
-        if #available(iOS 16.0, *) {
-            config.preferredAssetRepresentationMode = .current
-        } else {
-            config.preferredAssetRepresentationMode = .compatible
-        }
+        config.preferredAssetRepresentationMode = .current
         
         let picker = PHPickerViewController(configuration: config)
         picker.delegate = context.coordinator
@@ -27,8 +26,9 @@ struct ImagePicker: UIViewControllerRepresentable {
         Coordinator(self)
     }
     
-    class Coordinator: NSObject, PHPickerViewControllerDelegate {
-        let parent: ImagePicker
+    // MARK: - Coordinator
+    final class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        private let parent: ImagePicker
         
         init(_ parent: ImagePicker) {
             self.parent = parent
@@ -37,33 +37,52 @@ struct ImagePicker: UIViewControllerRepresentable {
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
             picker.dismiss(animated: true)
             
-            guard let provider = results.first?.itemProvider else { return }
+            guard let provider = results.first?.itemProvider else {
+                parent.isError = true
+                return
+            }
             
-            // Try to load the full size image
-            if provider.canLoadObject(ofClass: UIImage.self) {
-                provider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+            guard provider.canLoadObject(ofClass: UIImage.self) else {
+                parent.isError = true
+                return
+            }
+            
+            provider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+                DispatchQueue.main.async {
                     if let error = error {
-                        print("Error loading image: \(error)")
+                        self?.parent.isError = true
+                        print("Error loading image: \(error.localizedDescription)")
                         return
                     }
                     
-                    DispatchQueue.main.async {
-                        if let image = image as? UIImage {
-                            // Ensure we maintain the original image size and quality
-                            if let cgImage = image.cgImage {
-                                let originalImage = UIImage(
-                                    cgImage: cgImage,
-                                    scale: 1.0,
-                                    orientation: image.imageOrientation
-                                )
-                                self?.parent.image = originalImage
-                            } else {
-                                self?.parent.image = image
-                            }
-                        }
+                    guard let image = image as? UIImage,
+                          let cgImage = image.cgImage else {
+                        self?.parent.isError = true
+                        return
                     }
+                    
+                    self?.parent.image = UIImage(
+                        cgImage: cgImage,
+                        scale: 1.0,
+                        orientation: image.imageOrientation
+                    )
+                    self?.parent.isError = false
                 }
             }
         }
     }
+}
+
+// MARK: - Preview Provider
+#Preview {
+    struct PreviewWrapper: View {
+        @State private var image: UIImage?
+        @State private var isError = false
+        
+        var body: some View {
+            ImagePicker(image: $image, isError: $isError)
+        }
+    }
+    
+    return PreviewWrapper()
 } 
