@@ -163,27 +163,27 @@ private struct WardrobeItemsGrid: View {
     
     var body: some View {
         LazyVGrid(columns: GridConstants.threeColumn, spacing: GridConstants.spacing) {
-            if items.isEmpty {
-                // Show 6 placeholder items when no items exist
-                ForEach(0..<6) { _ in
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.customLightPink)
-                        .aspectRatio(1, contentMode: .fit)
-                        .overlay {
-                            Image(systemName: "tshirt")
-                                .foregroundColor(.customPink)
-                        }
-                }
-            } else {
-                ForEach(items) { item in
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.customLightPink)
-                        .aspectRatio(1, contentMode: .fit)
-                        .overlay {
-                            Image(systemName: "tshirt")
-                                .foregroundColor(.customPink)
-                        }
-                }
+            // Show actual items (up to 6)
+            ForEach(items.prefix(6)) { item in
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.customLightPink)
+                    .aspectRatio(1, contentMode: .fit)
+                    .overlay {
+                        // TODO: Replace with actual item image when available
+                        Image(systemName: "tshirt")
+                            .foregroundColor(.customPink)
+                    }
+            }
+            
+            // Fill remaining slots with placeholders
+            ForEach(0..<max(0, 6 - items.count), id: \.self) { _ in
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.customLightPink)
+                    .aspectRatio(1, contentMode: .fit)
+                    .overlay {
+                        Image(systemName: "tshirt")
+                            .foregroundColor(.customPink)
+                    }
             }
         }
         .padding(.horizontal)
