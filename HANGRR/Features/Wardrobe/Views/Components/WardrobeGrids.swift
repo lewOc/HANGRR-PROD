@@ -11,7 +11,6 @@ private enum Layout {
 // MARK: - Wardrobe Items Grid
 struct WardrobeItemsGrid: View {
     let items: [WardrobeItem]
-    @Binding var path: NavigationPath
     
     var body: some View {
         LazyVGrid(columns: Layout.gridColumns, spacing: Layout.spacing) {
@@ -92,7 +91,7 @@ struct OutfitsGrid: View {
 }
 
 // MARK: - Wardrobe Item View
-private struct WardrobeItemView: View {
+struct WardrobeItemView: View {
     let item: WardrobeItem
     
     var body: some View {
@@ -113,6 +112,6 @@ private struct WardrobeItemView: View {
 
 // MARK: - Preview Provider
 #Preview {
-    WardrobeItemsGrid(items: [], path: .constant(NavigationPath()))
+    WardrobeItemsGrid(items: [])
         .previewLayout(.sizeThatFits)
 } 

@@ -1,10 +1,12 @@
 import Foundation
 import SwiftData
+import SwiftUI
 
 @MainActor
 final class WardrobeViewModel: ObservableObject {
     @Published var searchText = ""
     @Published var isAddingItem = false
+    @Published var navigationPath: NavigationPath = NavigationPath()
     
     // MARK: - Navigation
     func navigateToTryOnOutfit() {
@@ -12,7 +14,7 @@ final class WardrobeViewModel: ObservableObject {
     }
     
     func navigateToTryOnItem() {
-        // TODO: Implement navigation
+        navigationPath.append("tryOnItem")
     }
     
     func navigateToWardrobeItems() {

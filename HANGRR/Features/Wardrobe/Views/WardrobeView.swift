@@ -15,7 +15,6 @@ struct WardrobeView: View {
     // MARK: - Properties
     @StateObject private var viewModel = WardrobeViewModel()
     @Environment(\.modelContext) private var modelContext
-    @State private var path = NavigationPath()
     
     @Query(sort: [SortDescriptor(\WardrobeItem.createdAt, order: .reverse)]) private var wardrobeItems: [WardrobeItem]
     
@@ -26,7 +25,7 @@ struct WardrobeView: View {
     
     // MARK: - Body
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack(path: $viewModel.navigationPath) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     headerSection
@@ -41,6 +40,8 @@ struct WardrobeView: View {
                 switch route {
                 case "upload":
                     UploadCropView(modelContext: modelContext)
+                case "tryOnItem":
+                    CreateOutfitView()
                 default:
                     EmptyView()
                 }
@@ -91,7 +92,7 @@ struct WardrobeView: View {
                 ) {
                     AnyView(
                         Button {
-                            path.append("upload")
+                            viewModel.navigationPath.append("upload")
                         } label: {
                             Image(systemName: "plus")
                                 .font(.title2)
@@ -105,7 +106,7 @@ struct WardrobeView: View {
             }
             .foregroundColor(.primary)
             
-            WardrobeItemsGrid(items: Array(wardrobeItems.prefix(6)), path: $path)
+            WardrobeItemsGrid(items: Array(wardrobeItems.prefix(6)))
         }
     }
     
