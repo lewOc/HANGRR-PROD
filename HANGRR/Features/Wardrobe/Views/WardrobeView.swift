@@ -40,8 +40,10 @@ struct WardrobeView: View {
                 switch route {
                 case "upload":
                     UploadCropView(modelContext: modelContext)
-                case "tryOnItem":
+                case "tryOnOutfit":
                     CreateOutfitView()
+                case "tryOnItem":
+                    TryOnItemView()
                 default:
                     EmptyView()
                 }

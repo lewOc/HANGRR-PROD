@@ -10,7 +10,7 @@ final class WardrobeViewModel: ObservableObject {
     
     // MARK: - Navigation
     func navigateToTryOnOutfit() {
-        // TODO: Implement navigation
+        navigationPath.append("tryOnOutfit")
     }
     
     func navigateToTryOnItem() {

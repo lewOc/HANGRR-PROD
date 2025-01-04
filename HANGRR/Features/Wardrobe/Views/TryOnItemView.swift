@@ -1,9 +1,9 @@
 import SwiftUI
 import SwiftData
 
-struct CreateOutfitView: View {
+struct TryOnItemView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel = CreateOutfitViewModel()
+    @StateObject private var viewModel = TryOnItemViewModel()
     
     var body: some View {
         VStack(spacing: 20) {
@@ -15,46 +15,41 @@ struct CreateOutfitView: View {
                 PhotoUploadView(image: $viewModel.userPhoto)
             }
             
-            // Top Selection Section
+            // Category Selection
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Select Top")
-                        .font(.headline)
-                    Spacer()
-                    Button("Browse Wardrobe") {
-                        viewModel.browseTops()
-                    }
-                    .foregroundColor(.customPink)
-                }
+                Text("Select Category")
+                    .font(.headline)
                 
-                HorizontalWardrobeItemsGrid(items: viewModel.topItems, selectedItem: $viewModel.selectedTop)
+                Picker("Category", selection: $viewModel.selectedCategory) {
+                    ForEach(WardrobeItemCategory.allCases, id: \.rawValue) { category in
+                        Text(category.displayName)
+                            .tag(category)
+                    }
+                }
+                .pickerStyle(.segmented)
             }
             
-            // Bottom Selection Section
+            // Garment Selection
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Select Bottom")
-                        .font(.headline)
-                    Spacer()
-                    Button("Browse Wardrobe") {
-                        viewModel.browseBottoms()
-                    }
-                    .foregroundColor(.customPink)
-                }
+                Text("Select Garment")
+                    .font(.headline)
                 
-                HorizontalWardrobeItemsGrid(items: viewModel.bottomItems, selectedItem: $viewModel.selectedBottom)
+                HorizontalWardrobeItemsGrid(
+                    items: viewModel.filteredItems,
+                    selectedItem: $viewModel.selectedItem
+                )
             }
             
             Spacer()
             
             // Try On Button
             Button {
-                viewModel.tryOnOutfit()
+                viewModel.tryOnItem()
             } label: {
                 VStack(spacing: 4) {
                     HStack {
-                        Image(systemName: "tshirt")
-                        Text("Try On Outfit")
+                        Image(systemName: "wand.and.stars")
+                        Text("Try It On")
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -62,9 +57,10 @@ struct CreateOutfitView: View {
                     .foregroundColor(.customPink)
                     .cornerRadius(10)
                     
-                    Text("Use AI to virtually try on this outfit combination")
+                    Text("Use AI to virtually try on an item. This currently works with tops, bottoms and all in ones like dresses and one-pieces")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
                 }
             }
             .disabled(!viewModel.canTryOn)
@@ -73,7 +69,7 @@ struct CreateOutfitView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text("Create Outfit")
+                Text("Try On Item")
                     .font(.headline)
             }
             ToolbarItem(placement: .cancellationAction) {
@@ -87,6 +83,6 @@ struct CreateOutfitView: View {
 
 #Preview {
     NavigationStack {
-        CreateOutfitView()
+        TryOnItemView()
     }
 } 
